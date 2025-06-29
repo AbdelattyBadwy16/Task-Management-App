@@ -1,22 +1,26 @@
 from fastapi import FastAPI
 from dotenv import load_dotenv
+
+# load environment variables from .env file
 load_dotenv()
+
 from .database import create_tables
 from .routers import router as task_router
 
+# create FastAPI app
 app = FastAPI(
     title="Task Management API",
     description="API to manage tasks with FastAPI, SQLModel, and SQLite",
     version="1.0.0"
 )
 
-# run when server start
+# this runs when the server starts
 @app.on_event("startup")
 def on_startup():
-    # create db tables
+    # create tables in the database if not exists
     create_tables()
 
-# add routers
+# register all the task routes
 app.include_router(task_router)
 
 
@@ -27,57 +31,84 @@ def read_root():
     """
     return {
         "message": "Welcome to the Task Management API!",
-        "endpoints": {
-            "Health Check": {
+        "endpoints": [
+            {
+                "name": "Health Check",
                 "method": "GET",
                 "path": "/health",
                 "description": "Check API health status."
             },
-            "List Tasks": {
+            {
+                "name": "List Tasks",
                 "method": "GET",
                 "path": "/tasks/",
-                "description": "List tasks with pagination.",
+                "description": "List tasks with filtering, search, sorting and pagination.",
                 "query_params": {
-                    "limit": "Number of items to return (default=10)",
-                    "offset": "Number of items to skip (default=0)",
-                    "status": "Filter by task status (pending, in_progress, completed).",
-                    "priority": "Filter by task priority (low, medium, high)."
+                    "limit": "Number of items to return (default=10).",
+                    "offset": "Number of items to skip (default=0).",
+                    "status": "Filter by status (pending, in_progress, completed).",
+                    "priority": "Filter by priority (low, medium, high).",
+                    "assigned_to": "Filter by assignee name.",
+                    "from_due_date": "Filter tasks with due date >= this date.",
+                    "to_due_date": "Filter tasks with due date <= this date.",
+                    "search": "Search in title/description.",
+                    "order_by": "Field to sort by.",
+                    "desc": "Sort descending (true/false)."
                 }
             },
-            "Create Task": {
+            {
+                "name": "Create Task",
                 "method": "POST",
                 "path": "/tasks/",
                 "description": "Create a new task."
             },
-            "Get Task by ID": {
+            {
+                "name": "Get Task by ID",
                 "method": "GET",
                 "path": "/tasks/{task_id}",
                 "description": "Retrieve a specific task by its ID."
             },
-            "Update Task": {
+            {
+                "name": "Update Task",
                 "method": "PUT",
                 "path": "/tasks/{task_id}",
                 "description": "Update an existing task."
             },
-            "Delete Task": {
+            {
+                "name": "Delete Task",
                 "method": "DELETE",
                 "path": "/tasks/{task_id}",
                 "description": "Delete a task by its ID."
             },
-            "Get Tasks by Status": {
+            {
+                "name": "Bulk Update Tasks",
+                "method": "PUT",
+                "path": "/tasks/bulk",
+                "description": "Update multiple tasks by IDs."
+            },
+            {
+                "name": "Bulk Delete Tasks",
+                "method": "DELETE",
+                "path": "/tasks/bulk",
+                "description": "Delete multiple tasks by IDs."
+            },
+            {
+                "name": "Get Tasks by Status",
                 "method": "GET",
                 "path": "/tasks/status/{status}",
-                "description": "Retrieve tasks filtered by status (pending, in_progress, completed)."
+                "description": "Retrieve tasks filtered by status."
             },
-            "Get Tasks by Priority": {
+            {
+                "name": "Get Tasks by Priority",
                 "method": "GET",
                 "path": "/tasks/priority/{priority}",
-                "description": "Retrieve tasks filtered by priority (low, medium, high)."
+                "description": "Retrieve tasks filtered by priority."
             },
-        }
+        ]
     }
 
-# Health check endpoint
+
+# simple health check endpoint
 @app.get("/health")
 def health_check():
     return {"status": "ok"}

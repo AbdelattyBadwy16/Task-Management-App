@@ -6,6 +6,7 @@ from app import schemas
 from . import models
 from sqlalchemy.orm import Session
 
+# Create a new task record in the database
 def create_task_service(db, task):
     db_task = models.Task(**task.dict())
     db.add(db_task)
@@ -14,6 +15,7 @@ def create_task_service(db, task):
     return db_task
 
 
+# List tasks with optional filters, sorting, and pagination
 def list_tasks_service(
     db: Session,
     limit: int,
@@ -61,8 +63,7 @@ def list_tasks_service(
     return query.all()
 
 
-
-
+# Retrieve a single task by its ID; raise 404 if not found
 def get_task_by_id_service(db: Session, task_id: int):
     task = db.query(models.Task).filter(models.Task.id == task_id).first()
     if not task:
@@ -70,6 +71,7 @@ def get_task_by_id_service(db: Session, task_id: int):
     return task
 
 
+# Update an existing task by ID with given fields
 def update_task_service(db: Session, task_id: int, task_data: schemas.TaskUpdate):
     task = db.query(models.Task).filter(models.Task.id == task_id).first()
     if not task:
@@ -84,6 +86,7 @@ def update_task_service(db: Session, task_id: int, task_data: schemas.TaskUpdate
     return task
 
 
+# Delete a task by ID; raise 404 if not found
 def delete_task_service(db: Session, task_id: int):
     task = db.query(models.Task).filter(models.Task.id == task_id).first()
     if not task:
@@ -92,14 +95,18 @@ def delete_task_service(db: Session, task_id: int):
     db.commit()
     return {"detail": "Task deleted successfully"}
 
+
+# Get all tasks filtered by a specific status
 def get_tasks_by_status_service(db: Session, status: models.TaskStatus):
     return db.query(models.Task).filter(models.Task.status == status).all()
 
 
+# Get all tasks filtered by a specific priority
 def get_tasks_by_priority_service(db: Session, priority: models.TaskPriority):
     return db.query(models.Task).filter(models.Task.priority == priority).all()
 
 
+# Delete multiple tasks given a list of IDs; raise 404 if none found
 def bulk_delete_tasks_service(db: Session, ids: List[int]):
     tasks = db.query(models.Task).filter(models.Task.id.in_(ids)).all()
     if not tasks:
@@ -109,6 +116,8 @@ def bulk_delete_tasks_service(db: Session, ids: List[int]):
     db.commit()
     return {"detail": f"Deleted {len(tasks)} tasks."}
 
+
+# Update multiple tasks given list of IDs and data dictionary
 def bulk_update_tasks_service(db: Session, ids: List[int], data: dict):
     tasks = db.query(models.Task).filter(models.Task.id.in_(ids)).all()
     if not tasks:
