@@ -1,6 +1,8 @@
+import os
 from sqlmodel import SQLModel, create_engine, Session
 
-DATABASE_URL = "sqlite:///./tasks.db"
+DATABASE_URL = os.environ["DATABASE_URL"]
+
 
 engine = create_engine(DATABASE_URL, echo=True)
 
